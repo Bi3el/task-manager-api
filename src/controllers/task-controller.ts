@@ -3,6 +3,8 @@ import { createTaskSchema } from '../schemas/create-task-schema.js';
 import { TaskService } from '../services/index.js';
 import { handleValidationError } from '../utils/validatione-errors.js';
 import { updateTaskBodySchema, updateTaskParamsSchema } from '../schemas/update-task-schema.js';
+import { changeTaskCompletionSchema } from '../schemas/change-task-completion-schema.js';
+import { deletedTaskSchema } from '../schemas/delete-task-schema.js';
 
 class TaskController {
     async createTask(req: Request, res: Response) {
@@ -65,6 +67,42 @@ class TaskController {
         res.status(500).json({ message: "Erro ao atualizar tarefa.", error: error.message });
       }
       }
-    }
+
+      async changeTaskCompletion(req: Request, res: Response) {
+        try {
+          const params = changeTaskCompletionSchema.parse(req.params);
+
+          const {id} = params;
+
+          const taskCompleted = await TaskService.changeTaskCompletion({ id})
+
+          res.status(200).json({message: 'Tarefa alterada com sucesso.', ...taskCompleted})
+        } catch (error: any) {
+          if (error.name === 'ZodError') {
+            handleValidationError(error, res);
+            return;
+          }
+          res.status(500).json({ message: "Erro ao atualizar tarefa.", error: error.message });
+        }
+      }
+
+      async deleteTask(req: Request, res: Response) {
+        try {
+          const params = deletedTaskSchema.parse(req.params);
+
+          const {id} = params;
+
+          const deletedTask = await TaskService.deleteTask({id});
+
+          res.status(200).json({message: "Tarefa deletada com sucesso.", ...deletedTask});
+        } catch (error: any) {
+          if (error.name === 'ZodError') {
+            handleValidationError(error, res);
+            return;
+          }
+          res.status(500).json({ message: "Erro ao deletar tarefa.", error: error.message });
+        }
+      }
+  }
 
 export default new TaskController();

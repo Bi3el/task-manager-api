@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { UpdateTaskProps, createTaskProps } from "../interfaces/tasks-services.js";
+import { UpdateTaskProps, changeTaskCompletionProps, createTaskProps, deleteTaskProps } from "../interfaces/tasks-services.js";
 import {  TaskModel  } from '../models/index.js';
 
 class TaskService {
@@ -37,6 +37,26 @@ class TaskService {
         updatedTask
     }
    }
+
+   async changeTaskCompletion({id} : changeTaskCompletionProps) {
+    const taskCompleted = await TaskModel.findOneAndUpdate(
+        {id},
+        [{$set: {completed: {$not: '$completed'} }}],
+        {new: true}
+    );
+
+    return {
+        taskCompleted
+    }
+   }
+
+   async deleteTask({id}: deleteTaskProps) {
+    const deleteTask = await TaskModel.findOneAndDelete({id});
+
+    return {
+      deleteTask
+    };
+  } 
 }
 
 export default new TaskService();
